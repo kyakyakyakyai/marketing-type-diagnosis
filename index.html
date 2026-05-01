@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>マーケタータイプ診断</title>
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4ecf7 100%);
+    min-height: 100vh;
+    color: #1a2540;
+    line-height: 1.7;
+    padding: 24px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .container {
+    background: #ffffff;
+    width: 100%;
+    max-width: 640px;
+    border-radius: 20px;
+    padding: 40px 32px;
+    box-shadow: 0 12px 40px rgba(26, 37, 64, 0.08);
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: #1a2540;
+    margin-bottom: 8px;
+  }
+
+  .header p {
+    font-size: 14px;
+    color: #6b7a99;
+  }
+
+  .progress {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 32px;
+  }
+
+  .progress-bar {
+    flex: 1;
+    height: 6px;
+    background: #e5ebf5;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .progress-bar.active {
+    background: #4a6cf7;
+  }
+
+  .question-number {
+    font-size: 13px;
+    font-weight: 600;
+    color: #4a6cf7;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+  }
+
+  .question-text {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.5;
+    margin-bottom: 28px;
+    color: #1a2540;
+  }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .option {
+    background: #f7f9fc;
+    border: 2px solid #e5ebf5;
+    border-radius: 12px;
+    padding: 18px 20px;
+    text-align: left;
+    font-size: 16px;
+    font-weight: 500;
+    color: #1a2540;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-family: inherit;
+    width: 100%;
+  }
+
+  .option:hover {
+    border-color: #4a6cf7;
+    background: #eef3ff;
+    transform: translateY(-1px);
+  }
+
+  .option:active {
+    transform: translateY(0);
+  }
+
+  .option-label {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2px solid #c5d0e5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    color: #4a6cf7;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+  }
+
+  .option:hover .option-label {
+    background: #4a6cf7;
+    color: #ffffff;
+    border-color: #4a6cf7;
+  }
+
+  .result {
+    text-align: center;
+  }
+
+  .result-badge {
+    display: inline-block;
+    background: #eef3ff;
+    color: #4a6cf7;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 6px 14px;
+    border-radius: 999px;
+    margin-bottom: 16px;
+  }
+
+  .result-icon {
+    font-size: 56px;
+    margin-bottom: 12px;
+  }
+
+  .result-title {
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #4a6cf7 0%, #6e3df5 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .result-tagline {
+    font-size: 16px;
+    color: #6b7a99;
+    margin-bottom: 28px;
+    font-weight: 500;
+  }
+
+  .result-description {
+    background: #f7f9fc;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: left;
+    margin-bottom: 24px;
+  }
+
+  .result-description h3 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #4a6cf7;
+    letter-spacing: 0.05em;
+    margin-bottom: 10px;
+  }
+
+  .result-description p {
+    font-size: 15px;
+    color: #1a2540;
+    line-height: 1.8;
+  }
+
+  .result-description + .result-description {
+    margin-top: 12px;
+  }
+
+  .restart-btn {
+    background: linear-gradient(135deg, #4a6cf7 0%, #6e3df5 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 32px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 6px 20px rgba(74, 108, 247, 0.3);
+  }
+
+  .restart-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(74, 108, 247, 0.4);
+  }
+
+  .fade-in {
+    animation: fadeIn 0.4s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 480px) {
+    body {
+      padding: 16px 12px;
+    }
+    .container {
+      padding: 28px 20px;
+      border-radius: 16px;
+    }
+    .header h1 {
+      font-size: 19px;
+    }
+    .question-text {
+      font-size: 18px;
+    }
+    .option {
+      font-size: 15px;
+      padding: 16px 16px;
+    }
+    .result-title {
+      font-size: 24px;
+    }
+    .result-icon {
+      font-size: 48px;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="container" id="app"></div>
+
+<script>
+  const questions = [
+    {
+      q: "施策を考えるとき、最初に何を見る？",
+      options: [
+        { label: "A", text: "データや数字", type: "A" },
+        { label: "B", text: "自分の感覚やひらめき", type: "B" },
+        { label: "C", text: "競合の動向", type: "C" },
+        { label: "D", text: "最新トレンド", type: "D" }
+      ]
+    },
+    {
+      q: "成果が出なかったとき、どうする？",
+      options: [
+        { label: "A", text: "データを深掘りして原因を探す", type: "A" },
+        { label: "B", text: "仮説を立て直す", type: "B" },
+        { label: "C", text: "すぐ次の施策に切り替える", type: "C" },
+        { label: "D", text: "人に相談・壁打ちする", type: "D" }
+      ]
+    },
+    {
+      q: "一番得意なことは？",
+      options: [
+        { label: "A", text: "分析・レポーティング", type: "A" },
+        { label: "B", text: "コンテンツ・クリエイティブ", type: "B" },
+        { label: "C", text: "広告運用・実行", type: "C" },
+        { label: "D", text: "企画・戦略立案", type: "D" }
+      ]
+    }
+  ];
+
+  const types = {
+    analyst: {
+      icon: "📊",
+      title: "アナリスト型",
+      tagline: "数字と論理でマーケを制する",
+      strengths: "データドリブンな思考が強みで、数値の裏に隠れた本質を読み解く力に長けています。仮説検証を繰り返し、再現性のある成果を生み出すことができます。",
+      caution: "数字に頼りすぎて行動が遅れたり、感情面のニーズを見落としがちなことも。直感やストーリーテリングの視点を取り入れると、施策がさらに強くなります。"
+    },
+    creator: {
+      icon: "🎨",
+      title: "クリエイター型",
+      tagline: "感性とコンテンツで差をつける",
+      strengths: "発想力とストーリー設計に優れ、人の心を動かすコンテンツを生み出せるタイプ。ブランドの世界観づくりや独自性のある表現が武器になります。",
+      caution: "成果の言語化や数値での裏付けが後回しになりがちです。アナリスト的な視点を取り入れて再現性を高めると、影響力が一段と広がります。"
+    },
+    executor: {
+      icon: "⚡",
+      title: "実行者型",
+      tagline: "スピードと行動力が武器",
+      strengths: "決めたら動く瞬発力と、現場で施策を回し切る実行力が抜群。試行回数の多さが、結果として最短ルートでの成功につながります。",
+      caution: "勢いで動くあまり、戦略や検証が浅くなることも。立ち止まって全体像を俯瞰する時間をつくると、行動の質がさらに高まります。"
+    },
+    strategist: {
+      icon: "🧭",
+      title: "戦略家型",
+      tagline: "全体を俯瞰して動く",
+      strengths: "市場・競合・自社を俯瞰して、勝ち筋を設計する力に長けています。中長期で「どこで戦い、どう勝つか」を描けるのが大きな強みです。",
+      caution: "考えすぎて実行が遅れたり、現場の細部から離れすぎることも。実行者の機動力や、データの一次情報に触れる時間を意識すると、戦略の解像度が上がります。"
+    }
+  };
+
+  // type → 結果タイプ のマッピング
+  const typeMap = {
+    A: "analyst",
+    B: "creator",
+    C: "executor",
+    D: "strategist"
+  };
+
+  let currentQuestion = 0;
+  let answers = [];
+  const app = document.getElementById("app");
+
+  function renderQuestion() {
+    const q = questions[currentQuestion];
+    const total = questions.length;
+
+    let progressHTML = '<div class="progress">';
+    for (let i = 0; i < total; i++) {
+      progressHTML += `<div class="progress-bar${i <= currentQuestion ? " active" : ""}"></div>`;
+    }
+    progressHTML += '</div>';
+
+    let optionsHTML = '<div class="options">';
+    q.options.forEach((opt, idx) => {
+      optionsHTML += `
+        <button class="option" data-type="${opt.type}" data-index="${idx}">
+          <span class="option-label">${opt.label}</span>
+          <span>${opt.text}</span>
+        </button>
+      `;
+    });
+    optionsHTML += '</div>';
+
+    app.innerHTML = `
+      <div class="header">
+        <h1>マーケタータイプ診断</h1>
+        <p>3つの質問でわかる、あなたの強み</p>
+      </div>
+      ${progressHTML}
+      <div class="fade-in">
+        <div class="question-number">QUESTION ${currentQuestion + 1} / ${total}</div>
+        <div class="question-text">${q.q}</div>
+        ${optionsHTML}
+      </div>
+    `;
+
+    document.querySelectorAll(".option").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const type = btn.getAttribute("data-type");
+        answers.push(type);
+        if (currentQuestion < total - 1) {
+          currentQuestion++;
+          renderQuestion();
+        } else {
+          renderResult();
+        }
+      });
+    });
+  }
+
+  function calcResultType() {
+    // 各タイプの票数をカウント
+    const count = { A: 0, B: 0, C: 0, D: 0 };
+    answers.forEach(a => count[a]++);
+
+    // 最大票を取得
+    const max = Math.max(...Object.values(count));
+    const candidates = Object.keys(count).filter(k => count[k] === max);
+
+    // 同数のときは Q3（得意なこと）の回答を優先
+    if (candidates.length === 1) {
+      return typeMap[candidates[0]];
+    } else {
+      const q3 = answers[2];
+      if (candidates.includes(q3)) return typeMap[q3];
+      return typeMap[candidates[0]];
+    }
+  }
+
+  function renderResult() {
+    const resultKey = calcResultType();
+    const r = types[resultKey];
+
+    app.innerHTML = `
+      <div class="result fade-in">
+        <div class="result-badge">あなたのタイプ</div>
+        <div class="result-icon">${r.icon}</div>
+        <div class="result-title">${r.title}</div>
+        <div class="result-tagline">${r.tagline}</div>
+
+        <div class="result-description">
+          <h3>STRENGTHS / 強み</h3>
+          <p>${r.strengths}</p>
+        </div>
+        <div class="result-description">
+          <h3>POINT / 伸びしろ</h3>
+          <p>${r.caution}</p>
+        </div>
+
+        <button class="restart-btn" id="restart">もう一度診断する</button>
+      </div>
+    `;
+
+    document.getElementById("restart").addEventListener("click", () => {
+      currentQuestion = 0;
+      answers = [];
+      renderQuestion();
+    });
+  }
+
+  renderQuestion();
+</script>
+</body>
+</html>
